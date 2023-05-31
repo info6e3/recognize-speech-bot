@@ -22,7 +22,7 @@ func GlebKhalitovBan(bot *tgbotapi.BotAPI, message *tgbotapi.Message) error {
 
 func poshelNah() bool {
 	rand.Seed(time.Now().UnixNano())
-	if rand.Intn(5) > 0 {
+	if rand.Intn(10) > 0 {
 		return false
 	}
 	return true

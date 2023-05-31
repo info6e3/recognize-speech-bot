@@ -18,7 +18,7 @@ type TelegramBotConfig struct {
 }
 
 type YandexApiConfig struct {
-	Token string
+	Key string
 }
 
 type Config struct {
@@ -42,7 +42,7 @@ func New() Config {
 			Token: getEnv("TELEGRAM_BOT_TOKEN", ""),
 		},
 		YandexApi: YandexApiConfig{
-			Token: getEnv("YANDEX_API_KEY", ""),
+			Key: getEnv("YANDEX_API_KEY", ""),
 		},
 	}
 }

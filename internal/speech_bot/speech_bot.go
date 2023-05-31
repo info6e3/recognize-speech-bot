@@ -17,10 +17,10 @@ func NewSpeechBot(token string, apiToken string, noneStop bool) *SpeechBot {
 }
 
 type SpeechBot struct {
-	token    string
-	apiToken string
-	noneStop bool
-	modules  []func(bot *tgbotapi.BotAPI, message *tgbotapi.Message) error
+	token       string
+	apiToken    string
+	noneStop    bool
+	middlewares []func(bot *tgbotapi.BotAPI, message *tgbotapi.Message) error
 }
 
 func (sb *SpeechBot) Run() {
@@ -53,6 +53,11 @@ func (sb *SpeechBot) Run() {
 			continue
 		}
 
+		err := sb.runMiddlewares(bot, update.Message)
+		if err != nil {
+			continue
+		}
+
 		if update.Message.Voice != nil {
 			file, _ := bot.GetFile(tgbotapi.FileConfig{
 				FileID: update.Message.Voice.FileID,
@@ -72,6 +77,16 @@ func (sb *SpeechBot) Run() {
 	}
 }
 
+func (sb *SpeechBot) runMiddlewares(bot *tgbotapi.BotAPI, message *tgbotapi.Message) error {
+	for _, v := range sb.middlewares {
+		err := v(bot, message)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func logSpeechMessage(message *tgbotapi.Message, VoiceText string) {
 	jsonMessage, err := json.Marshal(message)
 	if err == nil {
@@ -80,10 +95,6 @@ func logSpeechMessage(message *tgbotapi.Message, VoiceText string) {
 	}
 }
 
-func (sb *SpeechBot) NewSpeechBot(token string, apiToken string, noneStop bool) *SpeechBot {
-	return &SpeechBot{
-		token:    token,
-		apiToken: apiToken,
-		noneStop: noneStop,
-	}
+func (sb *SpeechBot) AddMiddleware(middleware func(bot *tgbotapi.BotAPI, message *tgbotapi.Message) error) {
+	sb.middlewares = append(sb.middlewares, middleware)
 }

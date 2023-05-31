@@ -1,11 +1,12 @@
 package app
 
 import (
-	"fmt"
 	"github.com/joho/godotenv"
 	"log"
-	"main/internal/bot"
 	"main/internal/config"
+	"main/internal/errors"
+	"main/internal/speech_bot"
+	"main/pkg/bot_middlewares"
 	"os"
 )
 
@@ -19,7 +20,7 @@ func RunApp() {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("Recover")
-			fmt.Println(r)
+			log.Println(r)
 		}
 	}()
 
@@ -33,5 +34,22 @@ func RunApp() {
 	}
 
 	conf := config.New()
-	bot.RunSpeechBot(conf.TelegramBot.Token, conf.YandexApi.Token, true)
+
+	var err error = nil
+	if conf.TelegramBot.Token == "" {
+		err = errors.NewSpeechBotError("Not found TELEGRAM_BOT_TOKEN in environment")
+		log.Println(err)
+	}
+	if conf.YandexApi.Key == "" {
+		err = errors.NewSpeechBotError("Not found YANDEX_API_KEY in environment")
+		log.Println(err)
+	}
+	if err != nil {
+		log.Println("Exit")
+		return
+	}
+
+	speechBot := speech_bot.NewSpeechBot(conf.TelegramBot.Token, conf.YandexApi.Key, true)
+	speechBot.AddMiddleware(bot_middlewares.GlebKhalitovBan)
+	speechBot.Run()
 }

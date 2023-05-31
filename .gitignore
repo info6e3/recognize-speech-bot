@@ -1,3 +1,5 @@
 .env
 .idea
 voices/*
+main
+pkg/bot_middlewares/*
